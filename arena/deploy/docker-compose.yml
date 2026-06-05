@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  migrate:
+    build:
+      context: ../backend
+    restart: "no"  # one-shot; must exit so the service_completed_successfully gate latches
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ../backend
+    restart: unless-stopped
+    command: ["uvicorn", "arena_core.server:build_prod_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: ../backend
+    restart: unless-stopped
+    command: ["rq", "worker", "--url", "${REDIS_URL}", "submissions"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      ARENA_DOCKER_RUNTIME: ${ARENA_DOCKER_RUNTIME}
+      ARENA_WORK_DIR: ${ARENA_WORK_DIR}
+    group_add:
+      - "${DOCKER_GID}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${ARENA_WORK_DIR}:${ARENA_WORK_DIR}
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        API_ORIGIN: ${API_ORIGIN}
+    restart: unless-stopped
+    environment:
+      API_ORIGIN: ${API_ORIGIN}
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ARENA_DOMAIN: ${ARENA_DOMAIN}
+      ARENA_ACME_EMAIL: ${ARENA_ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+volumes:
+  pg_data:
+  redis_data:
+  caddy_data:
+  caddy_config:

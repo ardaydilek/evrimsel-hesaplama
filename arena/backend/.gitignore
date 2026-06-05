@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# dev/e2e SQLite databases (build_app default + Playwright e2e)
+*.db
+*.db-wal
+*.db-shm

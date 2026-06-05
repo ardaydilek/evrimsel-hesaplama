@@ -1,0 +1,9 @@
+node_modules
+.next
+e2e
+__tests__
+.git
+README.md
+playwright-report
+test-results
+.env*

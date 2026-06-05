@@ -1,0 +1,42 @@
+# C/C++ build artifacts
+*.o
+*.d
+*.obj
+*.out
+/tsp
+/tsp_tests
+/build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# GA run outputs (regenerated)
+/results/
+
+# Visualization exports
+*.mp4
+*.gif
+
+# OS / editor
+.DS_Store
+*.swp
+.claude
+
+# M6 deploy secrets + local artifacts
+arena/deploy/.env
+arena/backend/_alembic_check.db
+
+# Personal / working docs — NOT for the public submission repo
+HANDOFF.md
+QA.md
+WALKTHROUGH.md
+/docs/
+*.pdf
+minimal tour length.txt
+*.egg-info/
+
+# Deploy guide kept local — not for the professor-facing repo
+/DEPLOYMENT.md

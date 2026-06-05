@@ -1,0 +1,62 @@
+{
+  "python": [
+    {
+      "path": "main.py",
+      "content": "def main():\n    with open(\"intercityDistance.txt\") as f:\n        nums = [int(x) for x in f.read().split()]\n    n = 42\n    d = [nums[i * n:(i + 1) * n] for i in range(n)]\n    visited = [False] * n\n    visited[0] = True\n    tour = [0]\n    cur = 0\n    for _ in range(n - 1):\n        best, best_d = -1, None\n        for j in range(n):\n            if not visited[j] and (best_d is None or d[cur][j] < best_d):\n                best, best_d = j, d[cur][j]\n        tour.append(best)\n        visited[best] = True\n        cur = best\n    print(\"TOUR \" + \" \".join(str(c + 1) for c in tour))\n\nmain()\n"
+    }
+  ],
+  "cpp": [
+    {
+      "path": "main.cpp",
+      "content": "#include <fstream>\n#include <iostream>\n#include <vector>\n\nint main() {\n    const int n = 42;\n    std::ifstream in(\"intercityDistance.txt\");\n    std::vector<std::vector<int>> d(n, std::vector<int>(n));\n    for (int i = 0; i < n; ++i)\n        for (int j = 0; j < n; ++j) in >> d[i][j];\n\n    std::vector<bool> visited(n, false);\n    std::vector<int> tour{0};\n    visited[0] = true;\n    int cur = 0;\n    for (int step = 0; step < n - 1; ++step) {\n        int best = -1, bestD = 0;\n        for (int j = 0; j < n; ++j)\n            if (!visited[j] && (best == -1 || d[cur][j] < bestD)) { best = j; bestD = d[cur][j]; }\n        tour.push_back(best);\n        visited[best] = true;\n        cur = best;\n    }\n    std::cout << \"TOUR\";\n    for (int c : tour) std::cout << ' ' << (c + 1);\n    std::cout << '\\n';\n}\n"
+    },
+    {
+      "path": "Makefile",
+      "content": "# Compiles every .cpp in the project; headers in any subfolder are found\n# automatically. Add more .cpp/.h files (or paste your own multi-file project)\n# and they're built into ./solver — no edits needed.\nSRC := $(shell find . -name '*.cpp')\nINC := $(addprefix -I,$(shell find . -type d))\nsolver: $(SRC)\n\tg++ -O2 -std=c++17 $(INC) $(SRC) -o solver\n"
+    }
+  ],
+  "go": [
+    {
+      "path": "main.go",
+      "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"os\"\n)\n\nfunc main() {\n\tconst n = 42\n\tf, err := os.Open(\"intercityDistance.txt\")\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer f.Close()\n\n\td := make([][]int, n)\n\tfor i := 0; i < n; i++ {\n\t\td[i] = make([]int, n)\n\t\tfor j := 0; j < n; j++ {\n\t\t\tfmt.Fscan(f, &d[i][j])\n\t\t}\n\t}\n\n\tvisited := make([]bool, n)\n\ttour := []int{0}\n\tvisited[0] = true\n\tcur := 0\n\tfor step := 0; step < n-1; step++ {\n\t\tbest, bestD := -1, 0\n\t\tfor j := 0; j < n; j++ {\n\t\t\tif !visited[j] && (best == -1 || d[cur][j] < bestD) {\n\t\t\t\tbest, bestD = j, d[cur][j]\n\t\t\t}\n\t\t}\n\t\ttour = append(tour, best)\n\t\tvisited[best] = true\n\t\tcur = best\n\t}\n\n\tfmt.Print(\"TOUR\")\n\tfor _, c := range tour {\n\t\tfmt.Printf(\" %d\", c+1)\n\t}\n\tfmt.Println()\n}\n"
+    },
+    {
+      "path": "go.mod",
+      "content": "module solver\n\ngo 1.22\n"
+    }
+  ],
+  "rust": [
+    {
+      "path": "Cargo.toml",
+      "content": "[package]\nname = \"solver\"\nversion = \"0.1.0\"\nedition = \"2021\"\n"
+    },
+    {
+      "path": "src/main.rs",
+      "content": "use std::fs;\n\nfn main() {\n    let n = 42;\n    let text = fs::read_to_string(\"intercityDistance.txt\").expect(\"read input\");\n    let nums: Vec<i64> = text.split_whitespace().map(|x| x.parse().unwrap()).collect();\n    let d: Vec<&[i64]> = (0..n).map(|i| &nums[i * n..(i + 1) * n]).collect();\n\n    let mut visited = vec![false; n];\n    let mut tour = vec![0usize];\n    visited[0] = true;\n    let mut cur = 0usize;\n    for _ in 0..n - 1 {\n        let (mut best, mut best_d): (i64, i64) = (-1, 0);\n        for j in 0..n {\n            if !visited[j] && (best == -1 || d[cur][j] < best_d) { best = j as i64; best_d = d[cur][j]; }\n        }\n        let b = best as usize;\n        tour.push(b);\n        visited[b] = true;\n        cur = b;\n    }\n    let s: Vec<String> = tour.iter().map(|c| (c + 1).to_string()).collect();\n    println!(\"TOUR {}\", s.join(\" \"));\n}\n"
+    }
+  ],
+  "node": [
+    {
+      "path": "main.js",
+      "content": "const fs = require(\"fs\");\nconst n = 42;\nconst nums = fs.readFileSync(\"intercityDistance.txt\", \"utf8\").trim().split(/\\s+/).map(Number);\nconst d = [];\nfor (let i = 0; i < n; i++) d.push(nums.slice(i * n, (i + 1) * n));\nconst visited = new Array(n).fill(false);\nconst tour = [0];\nvisited[0] = true;\nlet cur = 0;\nfor (let step = 0; step < n - 1; step++) {\n  let best = -1, bestD = 0;\n  for (let j = 0; j < n; j++)\n    if (!visited[j] && (best === -1 || d[cur][j] < bestD)) { best = j; bestD = d[cur][j]; }\n  tour.push(best);\n  visited[best] = true;\n  cur = best;\n}\nconsole.log(\"TOUR \" + tour.map((c) => c + 1).join(\" \"));\n"
+    },
+    {
+      "path": "package.json",
+      "content": "{\n  \"name\": \"solver\",\n  \"version\": \"1.0.0\",\n  \"private\": true\n}\n"
+    },
+    {
+      "path": "package-lock.json",
+      "content": "{\n  \"name\": \"solver\",\n  \"version\": \"1.0.0\",\n  \"lockfileVersion\": 3,\n  \"requires\": true,\n  \"packages\": { \"\": { \"name\": \"solver\", \"version\": \"1.0.0\" } }\n}\n"
+    }
+  ],
+  "java": [
+    {
+      "path": "pom.xml",
+      "content": "<project xmlns=\"http://maven.apache.org/POM/4.0.0\">\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>arena</groupId>\n  <artifactId>solver</artifactId>\n  <version>1.0</version>\n  <properties>\n    <maven.compiler.release>21</maven.compiler.release>\n    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>\n  </properties>\n  <build>\n    <finalName>app</finalName>\n    <plugins>\n      <plugin>\n        <groupId>org.apache.maven.plugins</groupId>\n        <artifactId>maven-jar-plugin</artifactId>\n        <configuration>\n          <archive><manifest><mainClass>Main</mainClass></manifest></archive>\n        </configuration>\n      </plugin>\n    </plugins>\n  </build>\n</project>\n"
+    },
+    {
+      "path": "src/main/java/Main.java",
+      "content": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        int n = 42;\n        String[] tok = Files.readString(Path.of(\"intercityDistance.txt\")).trim().split(\"\\\\s+\");\n        int[][] d = new int[n][n];\n        for (int i = 0; i < n; i++)\n            for (int j = 0; j < n; j++) d[i][j] = Integer.parseInt(tok[i * n + j]);\n\n        boolean[] visited = new boolean[n];\n        List<Integer> tour = new ArrayList<>();\n        visited[0] = true;\n        tour.add(0);\n        int cur = 0;\n        for (int step = 0; step < n - 1; step++) {\n            int best = -1, bestD = 0;\n            for (int j = 0; j < n; j++)\n                if (!visited[j] && (best == -1 || d[cur][j] < bestD)) { best = j; bestD = d[cur][j]; }\n            tour.add(best);\n            visited[best] = true;\n            cur = best;\n        }\n        StringBuilder sb = new StringBuilder(\"TOUR\");\n        for (int c : tour) sb.append(' ').append(c + 1);\n        System.out.println(sb);\n    }\n}\n"
+    }
+  ]
+}
